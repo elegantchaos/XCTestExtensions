@@ -7,7 +7,7 @@ import XCTest
 
 extension XCTestCase {
 
-    func temporaryFile(named: String? = nil, extension pathExtension: String? = nil) -> URL {
+    public func temporaryFile(named: String? = nil, extension pathExtension: String? = nil) -> URL {
         let intervals = Date.timeIntervalSinceReferenceDate
         let root = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(intervals)")
         let bundle = Bundle(for: type(of: self))
