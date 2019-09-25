@@ -3,13 +3,7 @@ import XCTest
 
 final class XCTestExtensionsTests: XCTestCase {
     func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(XCTestExtensions().text, "Hello, World!")
+        let url = temporaryFile(named: "test", extension: "blah")
+        XCTAssertEqual(url.lastPathComponent, "test.blah")
     }
-
-    static var allTests = [
-        ("testExample", testExample),
-    ]
 }
