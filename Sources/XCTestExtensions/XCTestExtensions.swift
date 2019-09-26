@@ -52,6 +52,17 @@ extension XCTestCase {
         let data = testData(named: name, withExtension: `extension`)
         return String(data: data, encoding: .utf8)!
     }
+    
+    /// Looks up a flag in the environment variables.
+    /// Returns true if it's not set, or set to a false-y value, true otherwise.
+    /// Useful for conditionalising tests.
+    /// - Parameter name: name of variable to check for.
+    public func testFlag(_ name: String) -> Bool {
+        guard let flag = ProcessInfo.processInfo.environment[name] else {
+            return false
+        }
+        return (flag as NSString).boolValue
+    }
 }
 
 /// Assert that a result is a success.
