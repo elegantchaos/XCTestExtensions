@@ -31,10 +31,36 @@ extension XCTestCase {
     }
     
     /// Returns the URL to a resource included in the test bundle.
+    /// By default this calls `url(forResource:withExtension)` on the bundle containing this code,
+    /// which should be the test bundle.
+    ///
+    /// If we're running a normal Xcode test target, and the resource file has been included in the target, this will pick it up.
+    /// If it fails, it might be because we're building with swift package manager. This creates a test bundle that
+    /// only contains the test code, and no data files, so we use a bit of trickery to attempt to find the data files.
+    /// This only works if the following assumptions are true:
+    /// - the location of the test bundle is the standard `.build` folder at the root of the module
+    /// - the module's root folder matches the name of the module
+    /// - the tests are in the standard path `Tests/<modulename>Tests/`
+    /// - the resource files we want are in a subfolder of the tests folder, called `Resources`
+    ///
+    /// If all of these assumptions are true, we can build a path to the resource file and return it that way.
+    ///
     /// - Parameter name: Name of the resource file.
     /// - Parameter extension: Extension of the resource file.
     public func testURL(named name: String, withExtension extension: String) -> URL {
-        return testBundle.url(forResource: name, withExtension: `extension`)!
+        let bundle = testBundle
+        if let url = bundle.url(forResource: name, withExtension: `extension`) {
+            return url
+        }
+        
+        let container = bundle.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        if container.lastPathComponent == ".build" {
+            let root = container.deletingLastPathComponent()
+            let module = root.deletingPathExtension().lastPathComponent
+            return container.deletingLastPathComponent().appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+        }
+        
+        fatalError("can't find test resource \(name) of type \(`extension`)")
     }
     
     /// Returns some test data loaded form the test bundle.
