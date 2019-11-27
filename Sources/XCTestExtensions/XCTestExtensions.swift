@@ -31,19 +31,28 @@ extension XCTestCase {
     }
     
     /// Returns the URL to a resource included in the test bundle.
-    /// By default this calls `url(forResource:withExtension)` on the bundle containing this code,
-    /// which should be the test bundle.
+    /// By default this calls `url(forResource:withExtension)` on the bundle containing this code.
     ///
-    /// If we're running a normal Xcode test target, and the resource file has been included in the target, this will pick it up.
-    /// If it fails, it might be because we're building with swift package manager. This creates a test bundle that
-    /// only contains the test code, and no data files, so we use a bit of trickery to attempt to find the data files.
-    /// This only works if the following assumptions are true:
-    /// - the location of the test bundle is the standard `.build` folder at the root of the module
+    /// If we're running a normal Xcode test target, and the resource file has been included in the target, then the
+    /// current bundle should be the one containing this xctest, and that bundle should contain the resource file.
+    ///
+    /// If we're building with SPM, or with Xcode but from an SPM project (eg after opening Packages.swift in Xcode),
+    /// then the xctest bundle with only contain the test code, and no data files. In this situation we use a bit of trickery
+    /// to attempt to find the data files.
+    /// If we're building from SPM, then the location of the test bundle should  be `.build`. In this case we can find
+    /// the location of resource files if they're placed in a standard location, based on the following:
+    /// - the build location has not been overridden with a custom value
+    /// - the module's root folder matches the name of the module
+    /// - the tests are in the standard path `Tests/<modulename>Tests/`
+    /// - the resource files we want are in a subfolder of the tests folder, called `Resources`
+    /// If we're building and SPM project from Xcode, then the location of the test bundle should be `Build` inside `DerivedData`.
+    /// In this case we can find the location of the resources if they're placed in a standard location, based on:
+    /// - the build location has not been overridden with a custom value
     /// - the module's root folder matches the name of the module
     /// - the tests are in the standard path `Tests/<modulename>Tests/`
     /// - the resource files we want are in a subfolder of the tests folder, called `Resources`
     ///
-    /// If all of these assumptions are true, we can build a path to the resource file and return it that way.
+    /// If these assumptions are true for either of these cases, we can build a path to the resource file and return it that way.
     ///
     /// - Parameter name: Name of the resource file.
     /// - Parameter extension: Extension of the resource file.
@@ -55,9 +64,23 @@ extension XCTestCase {
         
         let container = bundle.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         if container.lastPathComponent == ".build" {
+            // we're building with SPM
             let root = container.deletingLastPathComponent()
             let module = root.deletingPathExtension().lastPathComponent
-            return container.deletingLastPathComponent().appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+            return root.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+        } else if container.lastPathComponent == "Build" {
+            // we're building with Xcode, we can hopefully extract the workspace path from an Info.plist in the Build directory
+            let root = container.deletingLastPathComponent()
+            if let data = try? Data(contentsOf: root.appendingPathComponent("info.plist")) {
+                if let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil), let info = plist as? NSDictionary {
+                    if let path = info["WorkspacePath"] as? String {
+                        let workspace = URL(fileURLWithPath: path)
+                        let module = workspace.deletingPathExtension().lastPathComponent
+                        let url = workspace.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+                        return url
+                    }
+                }
+            }
         }
         
         fatalError("can't find test resource \(name) of type \(`extension`)")
