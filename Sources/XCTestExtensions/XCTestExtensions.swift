@@ -75,9 +75,19 @@ extension XCTestCase {
                 if let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil), let info = plist as? NSDictionary {
                     if let path = info["WorkspacePath"] as? String {
                         let workspace = URL(fileURLWithPath: path)
-                        let module = workspace.deletingPathExtension().lastPathComponent
-                        let url = workspace.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
-                        return url
+                        if workspace.pathExtension == "" {
+                            // if the extension is empty, we're building from the default auto-generated workspace
+                            let module = workspace.deletingPathExtension().lastPathComponent
+                            let url = workspace.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+                            return url
+                        } else {
+                            // we're building from an explicit workspace - we assume it's at the root level of the project
+                            // you can use this during development to set up a workspace which pulls in editable versions of dependencies
+                            let root = workspace.deletingLastPathComponent()
+                            let module = root.deletingPathExtension().lastPathComponent
+                            let url = root.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+                            return url
+                        }
                     }
                 }
             }
