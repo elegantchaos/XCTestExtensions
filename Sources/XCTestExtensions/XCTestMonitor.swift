@@ -58,7 +58,7 @@ open class SimpleTestMonitor<T>: XCTestMonitor {
      }
  }
 
-public struct WrappedTestMonitor<MonitorType: XCTestMonitor>: XCTestMonitor {
+open class WrappedTestMonitor<MonitorType: XCTestMonitor>: XCTestMonitor {
     public let wrappedMonitor: MonitorType
     
     public init(wrappedMonitor: MonitorType) {
