@@ -122,6 +122,19 @@ extension XCTestCase {
         }
         return (flag as NSString).boolValue
     }
+    
+    /// Returns path to the directory containing this test plugin.
+    /// When running from Xcode, this should be the built products directory.
+    public var productsDirectory: URL {
+      #if !os(Linux)
+        for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
+            return bundle.bundleURL.deletingLastPathComponent()
+        }
+        fatalError("couldn't find the products directory")
+      #else
+        return Bundle.main.bundleURL
+      #endif
+    }
 }
 
 /// Assert that a result is a success.
