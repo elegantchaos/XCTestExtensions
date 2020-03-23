@@ -135,6 +135,17 @@ extension XCTestCase {
         return Bundle.main.bundleURL
       #endif
     }
+    
+    #if os(macOS) || os(Linux)
+    /// Run an external executable in the same location as the test bundle, and
+    /// return its output.
+    @available(macOS 10.13, *) public func run(_ command: String, arguments: [String] = []) -> XCTestRunner.Result {
+        let runner = XCTestRunner(for: command)
+        let result = runner.run(with: arguments)
+        XCTAssertNotNil(result)
+        return result!
+    }
+    #endif
 }
 
 /// Assert that a result is a success.
