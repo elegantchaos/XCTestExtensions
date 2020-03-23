@@ -219,9 +219,11 @@ public func XCTAssertEqualIgnoringWhitespace(_ string: String, _ expected: Strin
     XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: true, file: file, line: line)
 }
 
+#if os(macOS) || os(Linux)
 /// Assert that the result of running an external executable matches expected values.
 @available(macOS 10.13, *) public func XCTAssertResult(_ result: XCTestRunner.Result, status: Int32, stdout: String, stderr: String, ignoringWhitespace: Bool = true, file: StaticString = #file, line: UInt = #line) {
     XCTAssertEqual(result.status, status, file: file, line: line)
     XCTAssertEqualLineByLine(result.stdout, stdout, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
     XCTAssertEqualLineByLine(result.stderr, stderr, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
 }
+#endif
