@@ -33,20 +33,11 @@ extension XCTestCase {
     /// Returns the name of this test bundle
     /// We use the executable name if available, as on Linux the bundle URL points to the build folder, and not an .xctest bundle.
     public var testBundleName: String {
-        let name: String
         if let url = testBundle.executableURL {
-            name = url.deletingPathExtension().lastPathComponent
+            return url.deletingPathExtension().lastPathComponent
         } else {
-            name = testBundle.bundleURL.deletingPathExtension().lastPathComponent
+            return testBundle.bundleURL.deletingPathExtension().lastPathComponent
         }
-        
-        #if os(Linux)
-        print(testBundle.executableURL!)
-        print(testBundle.bundleURL)
-        return name.replacingOccurrences(of: "PackageTest", with: "Test") // on Linux and Swift 5.2+, the bundle name seems to have Package added
-        #endif
-        
-        return name
     }
     
     /// Returns the URL to a resource included in the test bundle.

@@ -13,7 +13,8 @@ final class XCTestExtensionsTests: XCTestCase {
     }
     
     func testTestBundleName() {
-        XCTAssertEqual(testBundleName, "XCTestExtensionsTests")
+        let names = ["XCTestExtensionsTests", "XCTestExtensionsPackageTests"] // on Linux and Swift 5.2+, the bundle name seems to have Package added
+        XCTAssertTrue(names.contains(testBundleName))
     }
     
     func testTestBundle() {
