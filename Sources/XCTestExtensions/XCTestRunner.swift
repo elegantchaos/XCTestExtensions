@@ -27,15 +27,6 @@ public class XCTestRunner {
         self.cwd = cwd
     }
 
-    /**
-      Initialise to run a command in the same built products directory as this test bundle.
-    */
-
-    public convenience init(for command: String, cwd: URL? = nil, environment: [String:String] = ProcessInfo.processInfo.environment) {
-        let url = Bundle(for: XCTestRunner.self).bundleURL.deletingLastPathComponent()
-        self.init(for: url.appendingPathComponent(command), cwd: cwd, environment: environment)
-    }
-
 
     /**
      Invoke a command and some optional arguments synchronously.

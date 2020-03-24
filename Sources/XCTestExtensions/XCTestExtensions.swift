@@ -156,7 +156,8 @@ extension XCTestCase {
     /// Run an external executable in the same location as the test bundle, and
     /// return its output.
     public func run(_ command: String, arguments: [String] = []) -> XCTestRunner.Result {
-        let runner = XCTestRunner(for: command)
+        let url = productsDirectory.appendingPathComponent(command)
+        let runner = XCTestRunner(for: url)
         let result = runner.run(with: arguments)
         return result
     }
