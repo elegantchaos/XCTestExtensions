@@ -67,7 +67,13 @@ extension XCTestCase {
             return url
         }
         
-        let container = bundle.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        // look for .build folder
+        let names = [".build", "Build"]
+        var container = bundle.bundleURL
+        while container.isFileURL && !names.contains(container.lastPathComponent) {
+            container.deleteLastPathComponent()
+        }
+        
         if container.lastPathComponent == ".build" {
             // we're building with SPM
             let root = container.deletingLastPathComponent()
