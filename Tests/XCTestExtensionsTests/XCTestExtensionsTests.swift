@@ -21,7 +21,7 @@ final class XCTestExtensionsTests: XCTestCase {
         #if !os(Linux)
         XCTAssertEqual(url.pathExtension, "xctest")
         #else
-        XCTAssertTrue(FileManager.default.fileExists(atPath: url.appendingPathComponent(testBundleName).appendPathExtension("xctest")))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.appendingPathComponent(testBundleName).appendingPathExtension("xctest")))
         #endif
     }
     
