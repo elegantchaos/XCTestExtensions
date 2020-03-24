@@ -4,6 +4,9 @@ import PackageDescription
 
 let package = Package(
     name: "XCTestExtensions",
+    platforms: [
+        .macOS(.v10_13)
+    ],
     products: [
         .library(
             name: "XCTestExtensions",

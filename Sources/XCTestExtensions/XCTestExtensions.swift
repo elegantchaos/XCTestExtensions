@@ -30,6 +30,11 @@ extension XCTestCase {
         return Bundle(for: type(of: self))
     }
     
+    /// Returns the name of this test bundle
+    public var testBundleName: String {
+        return testBundle.bundleURL.deletingPathExtension().lastPathComponent
+    }
+    
     /// Returns the URL to a resource included in the test bundle.
     /// By default this calls `url(forResource:withExtension)` on the bundle containing this code.
     ///
@@ -139,11 +144,10 @@ extension XCTestCase {
     #if os(macOS) || os(Linux)
     /// Run an external executable in the same location as the test bundle, and
     /// return its output.
-    @available(macOS 10.13, *) public func run(_ command: String, arguments: [String] = []) -> XCTestRunner.Result {
+    public func run(_ command: String, arguments: [String] = []) -> XCTestRunner.Result {
         let runner = XCTestRunner(for: command)
         let result = runner.run(with: arguments)
-        XCTAssertNotNil(result)
-        return result!
+        return result
     }
     #endif
 }
@@ -221,9 +225,20 @@ public func XCTAssertEqualIgnoringWhitespace(_ string: String, _ expected: Strin
 
 #if os(macOS) || os(Linux)
 /// Assert that the result of running an external executable matches expected values.
-@available(macOS 10.13, *) public func XCTAssertResult(_ result: XCTestRunner.Result, status: Int32, stdout: String, stderr: String, ignoringWhitespace: Bool = true, file: StaticString = #file, line: UInt = #line) {
-    XCTAssertEqual(result.status, status, file: file, line: line)
-    XCTAssertEqualLineByLine(result.stdout, stdout, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
-    XCTAssertEqualLineByLine(result.stderr, stderr, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
+public func XCTAssertResult(_ result: XCTestRunner.Result, status: Int32, stdout: String, stderr: String, ignoringWhitespace: Bool = true, file: StaticString = #file, line: UInt = #line) {
+    switch result {
+        case .ok(let out, let err):
+            XCTAssertEqual(status, 0)
+            XCTAssertEqualLineByLine(out, stdout, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
+            XCTAssertEqualLineByLine(err, stderr, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
+        
+    case .failed(let code, let out, let err):
+            XCTAssertEqual(code, status)
+            XCTAssertEqualLineByLine(out, stdout, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
+            XCTAssertEqualLineByLine(err, stderr, ignoringWhitespace: ignoringWhitespace, file: file, line: line)
+
+    case .launchError(let error):
+        XCTFail("launch error \(error)", file: file, line: line)
+    }
 }
 #endif

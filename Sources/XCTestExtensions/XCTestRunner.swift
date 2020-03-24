@@ -6,15 +6,15 @@
 import Foundation
 
 #if os(macOS) || os(Linux)
-@available(macOS 10.13, *) public class XCTestRunner {
+public class XCTestRunner {
     var environment: [String:String]
     let executable: URL
     public var cwd: URL?
 
-    public struct Result {
-        public let status: Int32
-        public let stdout: String
-        public let stderr: String
+    public enum Result {
+        case ok(stdout: String, stderr: String)
+        case failed(status: Int32, stdout: String, stderr: String)
+        case launchError(error: Error)
     }
 
     /**
@@ -42,7 +42,7 @@ import Foundation
      Waits for the process to exit and returns the captured output plus the exit status.
      */
 
-    public func run(with arguments: [String] = []) -> Result? {
+    public func run(with arguments: [String] = []) -> Result {
         let stdout = Pipe()
         let stderr = Pipe()
         let process = Process()
@@ -54,10 +54,18 @@ import Foundation
         process.standardOutput = stdout
         process.standardError = stderr
         process.environment = environment
-        process.launch()
+        do {
+            try process.run()
+        } catch {
+            return .launchError(error: error)
+        }
+
         process.waitUntilExit()
-        
-        return Result(status: process.terminationStatus, stdout: stdout.asString, stderr: stderr.asString)
+        if process.terminationStatus == 0 {
+            return .ok(stdout: stdout.asString, stderr: stderr.asString)
+        } else {
+            return .failed(status: process.terminationStatus, stdout: stdout.asString, stderr: stderr.asString)
+        }
     }
     
     /// Extract text from an output pipe
