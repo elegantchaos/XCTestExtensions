@@ -34,7 +34,12 @@ final class XCTestExtensionsTests: XCTestCase {
     
     func testFlags() {
         XCTAssertFalse(testFlag("foo"))
-        XCTAssertTrue(testFlag("NSUnbufferedIO")) // TODO: this might be flaky - not sure we can rely on it always being set
-        print(ProcessInfo.processInfo.environment)
+        
+        let environment = ProcessInfo.processInfo.environment
+        if environment["GITHUB_ACTIONS"] != nil {
+            XCTAssertTrue(testFlag("GITHUB_ACTIONS")) // this should work when we're testing with GH actions
+        } else if environment["NSUnbufferedIO"] != nil {
+            XCTAssertTrue(testFlag("NSUnbufferedIO")) // this should work when testing from Xcode
+        }
     }
 }
