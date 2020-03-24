@@ -68,6 +68,7 @@ extension XCTestCase {
         }
         
         let container = bundle.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        print(container)
         if container.lastPathComponent == ".build" {
             // we're building with SPM
             let root = container.deletingLastPathComponent()
