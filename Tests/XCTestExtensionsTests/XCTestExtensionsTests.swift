@@ -12,21 +12,22 @@ final class XCTestExtensionsTests: XCTestCase {
         XCTAssertEqual(url.lastPathComponent, "test.blah")
     }
     
+    func testTestBundleName() {
+        XCTAssertEqual(testBundleName, "XCTestExtensionsTests")
+    }
+    
     func testTestBundle() {
-        let bundle = testBundle
-        print(bundle.bundleURL)
-        print(try! FileManager.default.contentsOfDirectory(atPath: bundle.bundleURL.path))
+        let url = testBundle.bundleURL
         #if !os(Linux)
-        XCTAssertEqual(bundle.bundleURL.pathExtension, "xctest")
+        XCTAssertEqual(url.pathExtension, "xctest")
+        #else
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.appendingPathComponent(testBundleName).appendPathExtension("xctest")))
         #endif
     }
     
     func testProductsDirectory() {
-        print(try! FileManager.default.contentsOfDirectory(atPath: productsDirectory.path))
-        #if !os(Linux)
         let ourURL = productsDirectory.appendingPathComponent(testBundleName).appendingPathExtension("xctest")
         XCTAssertTrue(FileManager.default.fileExists(atPath: ourURL.path))
-        #endif
     }
     
     func testResources() {
