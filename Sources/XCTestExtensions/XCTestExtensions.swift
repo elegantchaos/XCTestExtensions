@@ -68,7 +68,6 @@ extension XCTestCase {
         }
         
         let container = bundle.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-        print(container)
         if container.lastPathComponent == ".build" {
             // we're building with SPM
             let root = container.deletingLastPathComponent()
@@ -99,7 +98,7 @@ extension XCTestCase {
             }
         }
         
-        fatalError("can't find test resource \(name) of type \(`extension`)")
+        fatalError("can't find test resource \(name) of type \(`extension`) (from \(bundle.bundleURL))")
     }
     
     /// Returns some test data loaded form the test bundle.
