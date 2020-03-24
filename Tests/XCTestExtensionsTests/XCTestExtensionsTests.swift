@@ -34,6 +34,7 @@ final class XCTestExtensionsTests: XCTestCase {
     
     func testFlags() {
         XCTAssertFalse(testFlag("foo"))
-        XCTAssertTrue(testFlag("OS_ACTIVITY_DT_MODE")) // TODO: this might be flaky - not sure we can rely on it always being set
+        XCTAssertTrue(testFlag("NSUnbufferedIO")) // TODO: this might be flaky - not sure we can rely on it always being set
+        print(ProcessInfo.processInfo.environment)
     }
 }
