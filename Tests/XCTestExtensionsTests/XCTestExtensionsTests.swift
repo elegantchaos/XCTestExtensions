@@ -14,12 +14,19 @@ final class XCTestExtensionsTests: XCTestCase {
     
     func testTestBundle() {
         let bundle = testBundle
+        print(bundle.bundleURL)
+        print(try! FileManager.default.contentsOfDirectory(atPath: bundle.bundleURL.path))
+        #if !os(Linux)
         XCTAssertEqual(bundle.bundleURL.pathExtension, "xctest")
+        #endif
     }
     
     func testProductsDirectory() {
+        print(try! FileManager.default.contentsOfDirectory(atPath: productsDirectory.path))
+        #if !os(Linux)
         let ourURL = productsDirectory.appendingPathComponent(testBundleName).appendingPathExtension("xctest")
         XCTAssertTrue(FileManager.default.fileExists(atPath: ourURL.path))
+        #endif
     }
     
     func testResources() {
