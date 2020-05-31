@@ -7,6 +7,7 @@
 import XCTest
 import Foundation
 
+
 public func XCTAssertEqual<T>(_ r1: Result<T, Error>, _ r2: Result<T, Error>, file: StaticString = #file, line: UInt = #line) where T: Equatable, T: CustomStringConvertible {
     if case let .success(d1) = r1, case let .success(d2) = r2 {
         XCTAssertEqual(d1, d2, file: file, line: line)
