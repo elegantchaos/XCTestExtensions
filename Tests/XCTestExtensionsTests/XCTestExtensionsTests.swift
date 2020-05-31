@@ -51,4 +51,21 @@ final class XCTestExtensionsTests: XCTestCase {
             XCTAssertTrue(testFlag("NSUnbufferedIO")) // this should work when testing from Xcode
         }
     }
+    
+    func testResults() {
+        struct ExampleError: Error { }
+        typealias ExampleResult = Result<Int, Error>
+        
+        let ok1 = ExampleResult.success(1)
+        
+        XCTAssertEqual(ok1, ExampleResult.success(1))
+        XCTAssertNotEqual(ok1, ExampleResult.success(2))
+        XCTAssertNotEqual(ok1, ExampleResult.failure(ExampleError()))
+
+        let failed = ExampleResult.failure(ExampleError())
+        XCTAssertEqual(failed, ExampleResult.failure(ExampleError()))
+        XCTAssertNotEqual(failed, ExampleResult.failure(NSError(domain: "test", code: 123, userInfo: [:]) ))
+        XCTAssertNotEqual(failed, ExampleResult.success(1))
+
+    }
 }
