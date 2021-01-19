@@ -9,8 +9,10 @@ extension XCTestExtensionsTests {
         ("testFlags", testFlags),
         ("testProductsDirectory", testProductsDirectory),
         ("testResources", testResources),
+        ("testResults", testResults),
         ("testTemporaryFile", testTemporaryFile),
         ("testTestBundle", testTestBundle),
+        ("testTestBundleName", testTestBundleName),
     ]
 }
 

@@ -58,14 +58,26 @@ final class XCTestExtensionsTests: XCTestCase {
         
         let ok1 = ExampleResult.success(1)
         
+        XCTAssertSuccess(ok1) {
+            XCTAssertEqual($0, 1)
+        }
+        
         XCTAssertEqual(ok1, ExampleResult.success(1))
         XCTAssertNotEqual(ok1, ExampleResult.success(2))
         XCTAssertNotEqual(ok1, ExampleResult.failure(ExampleError()))
 
         let failed = ExampleResult.failure(ExampleError())
+        
+        XCTAssertFailure(failed) {
+            XCTAssertTrue($0 is ExampleError)
+        }
         XCTAssertEqual(failed, ExampleResult.failure(ExampleError()))
         XCTAssertNotEqual(failed, ExampleResult.failure(NSError(domain: "test", code: 123, userInfo: [:]) ))
         XCTAssertNotEqual(failed, ExampleResult.success(1))
 
+    }
+    
+    func testCollections() {
+        XCTAssertEmpty([])
     }
 }
