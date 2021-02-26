@@ -8,7 +8,7 @@
 import Combine
 import XCTest
 
-@available(macOS 10.15, iOS 13.0, *) public extension XCTestCase {
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *) public extension XCTestCase {
 
     /// Wait for a publisher to emit a value
     ///
