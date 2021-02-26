@@ -8,7 +8,7 @@
 import Combine
 import XCTest
 
-@available(macOS 10.15, *) public extension XCTestCase {
+@available(macOS 10.15, iOS 13.0, *) public extension XCTestCase {
 
     /// Wait for a publisher to emit a value
     ///
@@ -17,7 +17,7 @@ import XCTest
     ///   - action: An action to perform, which is expected to result in the publisher emitting a value.
     func XCTAssertEmitsValue<P>(_ publisher: P, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where P: Publisher, P.Failure == Never {
         let expectation = XCTestExpectation(description: "\(publisher) emitted value")
-        let watcher = publisher.sink() { _ in
+        let watcher = publisher.sink { _ in
             expectation.fulfill()
         }
         action()
@@ -35,7 +35,7 @@ import XCTest
     ///   - action: An action to perform, which is expected to result in the publisher not emitting a value.
     func XCTAssertEmitsNoValue<P>(_ publisher: P, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where P: Publisher, P.Failure == Never {
         let expectation = XCTestExpectation(description: "waiting period finished")
-        let watcher = publisher.sink() { value in
+        let watcher = publisher.sink { value in
             XCTFail("\(publisher) emitted an unexpected value: \(value)")
         }
 
