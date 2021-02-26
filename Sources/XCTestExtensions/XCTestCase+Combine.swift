@@ -15,8 +15,8 @@ import XCTest
     /// - Parameters:
     ///   - timeout: Time to wait before giving up.
     ///   - action: An action to perform, which is expected to result in the publisher emitting a value.
-    func waitForValue<P>(_ publisher: P, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where P: Publisher, P.Failure == Never {
-        let expectation = XCTestExpectation()
+    func XCTAssertEmitsValue<P>(_ publisher: P, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where P: Publisher, P.Failure == Never {
+        let expectation = XCTestExpectation(description: "\(publisher) emitted value")
         let watcher = publisher.sink() { _ in
             expectation.fulfill()
         }
@@ -33,13 +33,13 @@ import XCTest
     /// - Parameters:
     ///   - timeout: Time to wait before giving up.
     ///   - action: An action to perform, which is expected to result in the publisher not emitting a value.
-    func waitForNoValue<P>(_ publisher: P, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where P: Publisher, P.Failure == Never {
-        let expectation = XCTestExpectation()
-        let watcher = publisher.sink() { _ in
-            XCTFail("Unexpected value")
+    func XCTAssertEmitsNoValue<P>(_ publisher: P, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where P: Publisher, P.Failure == Never {
+        let expectation = XCTestExpectation(description: "waiting period finished")
+        let watcher = publisher.sink() { value in
+            XCTFail("\(publisher) emitted an unexpected value: \(value)")
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + timeout / 2.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeout * 0.9) {
             expectation.fulfill()
         }
 
@@ -53,16 +53,16 @@ import XCTest
     /// - Parameters:
     ///   - timeout: Time to wait before giving up.
     ///   - action: An action to perform, which is expected to result in the object changing.
-    func waitForChange<O>(_ object: O, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where O: ObservableObject {
-        waitForValue(object.objectWillChange, timeout: timeout, action: action)
+    func XCTAssertChanges<O>(_ object: O, timeout: TimeInterval = 0.1, action: @escaping () -> ()) where O: ObservableObject {
+        XCTAssertEmitsValue(object.objectWillChange, timeout: timeout, action: action)
     }
 
     /// Check that some action doesn't cause an observed object to change.
     /// - Parameters:
     ///   - timeout: Time to wait before giving up.
     ///   - action: An action to perform, which is expected to result in the object NOT changing.
-    func waitForChangeToFail<O>(_ object: O, timeout: TimeInterval = 0.1, _ action: @escaping () -> ()) where O: ObservableObject {
-        waitForNoValue(object.objectWillChange, timeout: timeout, action: action)
+    func XCTAssertDoesntChange<O>(_ object: O, timeout: TimeInterval = 0.1, _ action: @escaping () -> ()) where O: ObservableObject {
+        XCTAssertEmitsNoValue(object.objectWillChange, timeout: timeout, action: action)
     }
 }
 
