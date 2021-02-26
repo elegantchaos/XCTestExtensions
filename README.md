@@ -24,5 +24,6 @@ Includes helpers for:
 - quickly loading test data from the bundle
 - running an external executable and checking its output
 - better comparison of strings
+- performing asynchronous actions in tests, and waiting for them to complete
 
 
