@@ -3,7 +3,6 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-#if !os(watchOS)
 import XCTest
 import Foundation
 
@@ -61,4 +60,3 @@ public func XCTAssertNotEqual<T>(_ r1: Result<T, Error>, _ r2: Result<T, Error>,
         XCTAssertNotEqual(e1.localizedDescription, e2.localizedDescription, file: file, line: line)
     }
 }
-#endif

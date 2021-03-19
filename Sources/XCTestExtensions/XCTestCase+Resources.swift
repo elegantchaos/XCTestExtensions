@@ -3,7 +3,6 @@
 //  All code (c) 2019 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-#if !os(watchOS)
 import XCTest
 
 extension XCTestCase {
@@ -164,6 +163,3 @@ extension XCTestCase {
     }
     #endif
 }
-
-
-#endif

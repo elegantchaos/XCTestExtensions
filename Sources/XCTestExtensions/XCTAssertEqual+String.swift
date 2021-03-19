@@ -3,7 +3,6 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-#if !os(watchOS)
 import XCTest
 import Foundation
 
@@ -52,4 +51,3 @@ public func XCTAssertEqualIgnoringWhitespace(_ string: String, _ expected: Strin
     XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: true, file: file, line: line)
 }
 
-#endif

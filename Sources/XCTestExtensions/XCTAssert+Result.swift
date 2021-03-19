@@ -3,7 +3,6 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-#if !os(watchOS)
 import XCTest
 
 /// Assert that a result is a failure.
@@ -77,6 +76,4 @@ public func XCTAssertResult(_ result: XCTestRunner.Result, status: Int32, stdout
         XCTFail("launch error \(error)", file: file, line: line)
     }
 }
-#endif
-
 #endif

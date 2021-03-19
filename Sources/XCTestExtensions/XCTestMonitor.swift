@@ -3,7 +3,6 @@
 //  All code (c) 2019 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-#if !os(watchOS)
 import XCTest
 
 /// The status of an asynchronous test.
@@ -71,4 +70,3 @@ open class WrappedTestMonitor<MonitorType: XCTestMonitor>: XCTestMonitor {
     public func checkFailed() { wrappedMonitor.checkFailed() }
     public func check(count: Int, expected: Int) { wrappedMonitor.check(count: count, expected: expected) }
 }
-#endif
