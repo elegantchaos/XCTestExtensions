@@ -24,7 +24,7 @@ public func XCTAssertEqualLineByLine(_ string: String, _ expected: String, ignor
             }
             
             if line != expectedLine {
-                XCTFail("Strings different at line \(n).\n\n\"\(line)\"\n\nvs.\n\n\"\(expectedLine)\"", file: file, line: fileLine)
+                XCTFail("strings different at line \(n).\n\nwas:\n\n\"\(line)\"\n\nexpected:\n\n\"\(expectedLine)\"\n", file: file, line: fileLine)
                 return
             }
         }
@@ -39,7 +39,7 @@ public func XCTAssertEqualLineByLine(_ string: String, _ expected: String, ignor
     }
 }
 
-/// Assert that two strings are equal, ignoring whitespace at the beginning/end of each line.
+/// Assert that two strings are equal, without ignoring whitespace at the beginning/end of each line.
 /// If the strings don't match, this function compares them line by line to produce a more accurate description of the place where they differ.
 public func XCTAssertEqual(_ string: String, _ expected: String, file: StaticString = #file, line: UInt = #line) {
     XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: false, file: file, line: line)
@@ -49,5 +49,22 @@ public func XCTAssertEqual(_ string: String, _ expected: String, file: StaticStr
 /// If the strings don't match, this function compares them line by line to produce a more accurate description of the place where they differ.
 public func XCTAssertEqualIgnoringWhitespace(_ string: String, _ expected: String, file: StaticString = #file, line: UInt = #line) {
     XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: true, file: file, line: line)
+}
+
+
+/// Assert that two arrays of strings are equal, without ignoring whitespace at the beginning/end of each line.
+/// If the strings don't match, this function compares them line by line to produce a more accurate description of the place where they differ.
+public func XCTAssertEqual(_ strings: [String], _ expected: [String], file: StaticString = #file, line: UInt = #line) {
+    for (string, expected) in zip(strings, expected) {
+        XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: false, file: file, line: line)
+    }
+}
+
+/// Assert that two strings are equal, ignoring whitespace at the beginning/end of each line.
+/// If the strings don't match, this function compares them line by line to produce a more accurate description of the place where they differ.
+public func XCTAssertEqualIgnoringWhitespace(_ strings: [String], _ expected: [String], file: StaticString = #file, line: UInt = #line) {
+    for (string, expected) in zip(strings, expected) {
+        XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: true, file: file, line: line)
+    }
 }
 
