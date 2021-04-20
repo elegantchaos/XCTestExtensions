@@ -36,33 +36,6 @@ jobs:
             path: logs
 
 
-    macOS-swift-52:
-        name: macOS (Swift 5.2)
-        runs-on: macOS-latest
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v1
-        - name: Make Logs Directory
-          run: mkdir logs
-        - name: Xcode Version
-          run: |
-            sudo xcode-select -s /Applications/Xcode_11.4.app
-            xcodebuild -version
-            swift --version
-        - name: Swift Version
-          run: swift --version
-        - name: Build (Release)
-          run: swift build -c release
-        - name: Test (Release)
-          run: swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
-        - name: Upload Logs
-          uses: actions/upload-artifact@v1
-          if: always()
-          with:
-            name: logs
-            path: logs
-
-
     macOS-swift-53:
         name: macOS (Swift 5.3)
         runs-on: macOS-latest
@@ -113,29 +86,6 @@ jobs:
             path: logs
 
 
-    linux-swift-52:
-        name: Linux (Swift 5.2)
-        runs-on: ubuntu-18.04
-        container: swift:5.2.3-bionic
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v1
-        - name: Make Logs Directory
-          run: mkdir logs
-        - name: Swift Version
-          run: swift --version
-        - name: Build (Release)
-          run: swift build -c release
-        - name: Test (Release)
-          run: swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
-        - name: Upload Logs
-          uses: actions/upload-artifact@v1
-          if: always()
-          with:
-            name: logs
-            path: logs
-
-
     linux-swift-53:
         name: Linux (Swift 5.3)
         runs-on: ubuntu-18.04
@@ -170,105 +120,6 @@ jobs:
         - name: Xcode Version
           run: |
             sudo xcode-select -s /Applications/Xcode_11.3.1.app
-            xcodebuild -version
-            swift --version
-        - name: XC Pretty
-          run: sudo gem install xcpretty-travis-formatter
-        - name: Detect Workspace & Scheme (iOS)
-          run: |
-            WORKSPACE="XCTestExtensions.xcworkspace"
-            if [[ ! -e "$WORKSPACE" ]]
-            then
-            WORKSPACE="."
-            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep XCTestExtensions-Package || true))
-            if [[ $GOTPACKAGE != "" ]]
-            then
-            SCHEME="XCTestExtensions-Package"
-            else
-            SCHEME="XCTestExtensions"
-            fi
-            else
-            SCHEME="XCTestExtensions-iOS"
-            fi
-            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
-        - name: Build (iOS Release)
-          run: |
-            source "setup.sh"
-            echo "Building workspace $WORKSPACE scheme $SCHEME."
-            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-iOS-build-release.log | xcpretty
-        - name: Test (iOS Release)
-          run: |
-            source "setup.sh"
-            echo "Testing workspace $WORKSPACE scheme $SCHEME."
-            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=iPhone 11" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-iOS-test-release.log | xcpretty
-        - name: Detect Workspace & Scheme (tvOS)
-          run: |
-            WORKSPACE="XCTestExtensions.xcworkspace"
-            if [[ ! -e "$WORKSPACE" ]]
-            then
-            WORKSPACE="."
-            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep XCTestExtensions-Package || true))
-            if [[ $GOTPACKAGE != "" ]]
-            then
-            SCHEME="XCTestExtensions-Package"
-            else
-            SCHEME="XCTestExtensions"
-            fi
-            else
-            SCHEME="XCTestExtensions-tvOS"
-            fi
-            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
-        - name: Build (tvOS Release)
-          run: |
-            source "setup.sh"
-            echo "Building workspace $WORKSPACE scheme $SCHEME."
-            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-tvOS-build-release.log | xcpretty
-        - name: Test (tvOS Release)
-          run: |
-            source "setup.sh"
-            echo "Testing workspace $WORKSPACE scheme $SCHEME."
-            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=Apple TV" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-tvOS-test-release.log | xcpretty
-        - name: Detect Workspace & Scheme (watchOS)
-          run: |
-            WORKSPACE="XCTestExtensions.xcworkspace"
-            if [[ ! -e "$WORKSPACE" ]]
-            then
-            WORKSPACE="."
-            GOTPACKAGE=$(xcodebuild -workspace . -list | (grep XCTestExtensions-Package || true))
-            if [[ $GOTPACKAGE != "" ]]
-            then
-            SCHEME="XCTestExtensions-Package"
-            else
-            SCHEME="XCTestExtensions"
-            fi
-            else
-            SCHEME="XCTestExtensions-watchOS"
-            fi
-            echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
-        - name: Build (watchOS Release)
-          run: |
-            source "setup.sh"
-            echo "Building workspace $WORKSPACE scheme $SCHEME."
-            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-watchOS-build-release.log | xcpretty
-        - name: Upload Logs
-          uses: actions/upload-artifact@v1
-          if: always()
-          with:
-            name: logs
-            path: logs
-
-
-    xcode-swift-52:
-        name: Xcode (Swift 5.2)
-        runs-on: macOS-latest
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v1
-        - name: Make Logs Directory
-          run: mkdir logs
-        - name: Xcode Version
-          run: |
-            sudo xcode-select -s /Applications/Xcode_11.4.app
             xcodebuild -version
             swift --version
         - name: XC Pretty
