@@ -10,7 +10,7 @@ import Foundation
 /// If the strings don't match, this function compares them line by line to produce a more accurate description of the place where they differ.
 /// It optionally ignores whitespace at the beginning/end of each line.
 public func XCTAssertEqualLineByLine(_ string: String, _ expected: String, ignoringWhitespace: Bool = false, file: StaticString = #file, line: UInt = #line) {
-    let options: XCTCheckOptions = ignoringWhitespace ? [.ignoringWhitespace] : []
+    let options: MatchOptions = ignoringWhitespace ? [.ignoringWhitespace] : []
     XCTAssert(string, matches: expected, options: options, file: file, line: line)
 }
 
