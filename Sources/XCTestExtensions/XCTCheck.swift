@@ -16,6 +16,31 @@ public struct XCTCheckOptions: OptionSet {
     public static let `default`: XCTCheckOptions = []
 }
 
+public struct XCTCheckError<T>: Error {
+    internal init(_ detail: String, value: T, expected: T, file: StaticString, line: UInt) {
+        self.detail = detail
+        self.value = value
+        self.expected = expected
+        self.file = file
+        self.line = line
+    }
+    
+    let detail: String
+    let value: T
+    let expected: T
+    let file: StaticString
+    let line: UInt
+}
+
+extension XCTCheckError: CustomStringConvertible {
+    public var description: String {
+        let url = URL(fileURLWithPath: String(stringLiteral: file.description))
+        let h = "Check failed at line \(line) of \(url.lastPathComponent)."
+        let s = String(repeating: "-", count: h.count)
+        return "\n\n\(s)\n\(h)\n\(s)\n\n\(detail)\n\nwas: \(value)\nexpected: \(expected)\npath: \(file)\n\n"
+    }
+}
+
 public enum XCTCheckFailure: Error {
     public struct StringDetails {
         let description: String
@@ -66,8 +91,8 @@ public func XCTCheck<T, I>(_ key: KeyPath<T, I>, of value: T, matches other: T, 
 /// It optionally ignores whitespace at the beginning/end of each line.
 extension String: Checkable {
     public func matches(_ expected: String, options: XCTCheckOptions, file: StaticString = #file, line: UInt = #line) throws {
-        func failure(_ message: String) -> XCTCheckFailure {
-            return XCTCheckFailure.failure(message, value: self, matches: expected, file: file, line: line)
+        func failure(_ message: String) -> XCTCheckError<String> {
+            return XCTCheckError(message, value: self, expected: expected, file: file, line: line)
         }
     
         let ignoringWhitespace = options.contains(.ignoringWhitespace)
@@ -103,7 +128,7 @@ extension String: Checkable {
 extension Int: Checkable {
     public func matches(_ other: Int, options: XCTCheckOptions, file: StaticString, line: UInt) throws {
         if self != other {
-            throw XCTCheckFailure.integers(XCTCheckFailure.IntDetails(description: "\(self) != \(other)", value: self, expected: other, file: file, line: line))
+            throw XCTCheckError("\(self) != \(other)", value: self, expected: other, file: file, line: line)
         }
     }
 }
