@@ -6,7 +6,7 @@
 import Foundation
 
 public protocol Matchable {
-    func matches(_ other: Self, context: MatchableContext) throws
+    func assertMatches(_ other: Self, in: MatchableContext) throws
 }
 
 public protocol MatchableContext {
@@ -58,40 +58,40 @@ public struct MatchOptions: OptionSet {
 extension MatchFailedError: CustomStringConvertible {
     public var description: String {
         let url = URL(fileURLWithPath: String(stringLiteral: context.file.description))
-        let h = "Check failed at line \(context.line) of \(url.lastPathComponent)."
+        let h = "Matching failed at line \(context.line) of \(url.lastPathComponent)."
         let s = String(repeating: "-", count: h.count)
-        return "\n\n\(s)\n\(h)\n\(s)\n\n\(detail)\n\nwas: \(value)\nexpected: \(expected)\npath: \(context.file)\n\n"
+        return "\n\n\(s)\n\(h)\n\(s)\n\n\(detail)\n\n\(value)\n\n-- instead of --\n\n\(expected)\npath: \(context.file)\n\n"
     }
 }
 
 extension Matchable {
-    public func matches<F>(_ key: KeyPath<Self, F>, of other: Self, context: MatchableContext) throws where F: Matchable {
+    public func assertMatches<F>(_ key: KeyPath<Self, F>, of other: Self, context: MatchableContext) throws where F: Matchable {
         let a = self[keyPath: key]
         let b = other[keyPath: key]
-        try a.matches(b, context: context)
+        try a.assertMatches(b, in: context)
     }
 
-    public func matches<F>(_ keys: [KeyPath<Self, F>], of other: Self, context: MatchableContext) throws where F: Matchable {
+    public func assertMatches<F>(_ keys: [KeyPath<Self, F>], of other: Self, context: MatchableContext) throws where F: Matchable {
         for key in keys {
             let a = self[keyPath: key]
             let b = other[keyPath: key]
-            try a.matches(b, context: context)
+            try a.assertMatches(b, in: context)
         }
     }
     
-    public func matches(_ other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws {
-        try matches(other, context: MatchContext(options: options, file: file, line: line))
+    public func assertMatches(_ other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws {
+        try assertMatches(other, in: MatchContext(options: options, file: file, line: line))
     }
 
-    public func matches<F>(_ key: KeyPath<Self, F>, of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
-        try matches(key, of: other, context: MatchContext(options: options, file: file, line: line))
+    public func assertMatches<F>(_ key: KeyPath<Self, F>, of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
+        try assertMatches(key, of: other, context: MatchContext(options: options, file: file, line: line))
     }
 
-    public func matches<F>(_ keys: [KeyPath<Self, F>], of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
-        try matches(keys, of: other, context: MatchContext(options: options, file: file, line: line))
+    public func assertMatches<F>(_ keys: [KeyPath<Self, F>], of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
+        try assertMatches(keys, of: other, context: MatchContext(options: options, file: file, line: line))
     }
 
-    public func wrappingChecks(_ message: String? = nil, of other: Self, context: MatchableContext, checks: () throws -> Void) throws {
+    public func assertWrappedChecksMatch(_ message: String? = nil, of other: Self, in context: MatchableContext, checks: () throws -> Void) throws {
         do {
             try checks()
         } catch {
@@ -106,7 +106,7 @@ extension Matchable {
 }
 
 public extension RawRepresentable where RawValue: Matchable {
-    func matches(_ other: Self, context: MatchableContext) throws {
-        try rawValue.matches(other.rawValue, context: context)
+    func assertMatches(_ other: Self, in context: MatchableContext) throws {
+        try rawValue.assertMatches(other.rawValue, in: context)
     }
 }

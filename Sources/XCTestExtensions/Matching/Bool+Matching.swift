@@ -6,7 +6,7 @@
 import Foundation
 
 extension Bool: Matchable {
-    public func matches(_ other: Bool, context: MatchableContext) throws {
+    public func assertMatches(_ other: Bool, in context: MatchableContext) throws {
         if self != other {
             throw MatchFailedError("Bool values don't match.", value: self, expected: other, context: context)
         }

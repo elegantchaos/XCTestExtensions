@@ -6,7 +6,7 @@
 import Foundation
 
 extension Date: Matchable {
-    public func matches(_ other: Date, context: MatchableContext) throws {
+    public func assertMatches(_ other: Date, in context: MatchableContext) throws {
         if self != other {
             throw MatchFailedError("Dates don't match", value: self, expected: other, context: context)
         }

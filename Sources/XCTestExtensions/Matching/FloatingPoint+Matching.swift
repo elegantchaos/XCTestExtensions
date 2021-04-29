@@ -6,7 +6,7 @@
 import Foundation
 
 extension BinaryFloatingPoint {
-    public func matches(_ other: Self, context: MatchableContext) throws {
+    public func assertMatches(_ other: Self, in context: MatchableContext) throws {
         if self != other {
             throw MatchFailedError("\(self) != \(other)", value: self, expected: other, context: context)
         }
