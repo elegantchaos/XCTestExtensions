@@ -18,20 +18,23 @@ public protocol MatchableContext {
 public protocol MatchFailedErrorBase: Error {
     var detail: String { get }
     var context: MatchableContext { get }
+    var underlyingError: MatchFailedErrorBase? { get }
 }
 
 public struct MatchFailedError<T>: MatchFailedErrorBase {
-    internal init(_ detail: String, value: T, expected: T, context: MatchableContext) {
+    public init(_ detail: String, value: T, expected: T, underlyingError: MatchFailedErrorBase? = nil, context: MatchableContext) {
         self.detail = detail
         self.value = value
         self.expected = expected
         self.context = context
+        self.underlyingError = underlyingError
     }
     
     public let detail: String
     public let value: T
     public let expected: T
     public let context: MatchableContext
+    public let underlyingError: MatchFailedErrorBase?
 }
 
 public struct MatchContext: MatchableContext {
@@ -88,4 +91,22 @@ extension Matchable {
         try matches(keys, of: other, context: MatchContext(options: options, file: file, line: line))
     }
 
+    public func wrappingChecks(_ message: String? = nil, of other: Self, context: MatchableContext, checks: () throws -> Void) throws {
+        do {
+            try checks()
+        } catch {
+            if let error = error as? MatchFailedErrorBase {
+                let detail = message ?? "\(Self.self) instances failed to match"
+                throw MatchFailedError(detail, value: self, expected: other, underlyingError: error, context: context)
+            } else {
+                throw error
+            }
+        }
+    }
+}
+
+public extension RawRepresentable where RawValue: Matchable {
+    func matches(_ other: Self, context: MatchableContext) throws {
+        try rawValue.matches(other.rawValue, context: context)
+    }
 }

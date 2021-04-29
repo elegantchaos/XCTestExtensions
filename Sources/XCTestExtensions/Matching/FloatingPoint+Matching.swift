@@ -5,10 +5,16 @@
 
 import Foundation
 
-extension Int: Matchable {
-    public func matches(_ other: Int, context: MatchableContext) throws {
+extension BinaryFloatingPoint {
+    public func matches(_ other: Self, context: MatchableContext) throws {
         if self != other {
             throw MatchFailedError("\(self) != \(other)", value: self, expected: other, context: context)
         }
     }
+}
+
+extension Double: Matchable {
+}
+
+extension Float: Matchable {
 }
