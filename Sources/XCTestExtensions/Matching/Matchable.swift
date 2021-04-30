@@ -6,7 +6,11 @@
 import Foundation
 
 public protocol Matchable {
-    func assertMatches(_ other: Self, in: MatchableContext) throws
+    func assertMatches(_ other: Self, in context: MatchableContext) throws
+}
+
+public protocol MatchableCompound: Matchable {
+    func assertContentMatches(_ other: Self, in context: MatchableContext) throws
 }
 
 public protocol MatchableContext {
@@ -64,14 +68,14 @@ extension MatchFailedError: CustomStringConvertible {
     }
 }
 
-extension Matchable {
-    public func assertMatches<F>(_ key: KeyPath<Self, F>, of other: Self, context: MatchableContext) throws where F: Matchable {
+public extension Matchable {
+    func assertMatches<F>(_ key: KeyPath<Self, F>, of other: Self, context: MatchableContext) throws where F: Matchable {
         let a = self[keyPath: key]
         let b = other[keyPath: key]
         try a.assertMatches(b, in: context)
     }
 
-    public func assertMatches<F>(_ keys: [KeyPath<Self, F>], of other: Self, context: MatchableContext) throws where F: Matchable {
+    func assertMatches<F>(_ keys: [KeyPath<Self, F>], of other: Self, context: MatchableContext) throws where F: Matchable {
         for key in keys {
             let a = self[keyPath: key]
             let b = other[keyPath: key]
@@ -79,19 +83,19 @@ extension Matchable {
         }
     }
     
-    public func assertMatches(_ other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws {
+    func assertMatches(_ other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws {
         try assertMatches(other, in: MatchContext(options: options, file: file, line: line))
     }
 
-    public func assertMatches<F>(_ key: KeyPath<Self, F>, of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
+    func assertMatches<F>(_ key: KeyPath<Self, F>, of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
         try assertMatches(key, of: other, context: MatchContext(options: options, file: file, line: line))
     }
 
-    public func assertMatches<F>(_ keys: [KeyPath<Self, F>], of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
+    func assertMatches<F>(_ keys: [KeyPath<Self, F>], of other: Self, options: MatchOptions = .default, file: StaticString = #file, line: UInt = #line) throws where F: Matchable {
         try assertMatches(keys, of: other, context: MatchContext(options: options, file: file, line: line))
     }
 
-    public func assertWrappedChecksMatch(_ message: String? = nil, of other: Self, in context: MatchableContext, checks: () throws -> Void) throws {
+    func assertWrappedChecksMatch(_ message: String? = nil, of other: Self, in context: MatchableContext, checks: () throws -> Void) throws {
         do {
             try checks()
         } catch {
@@ -105,8 +109,28 @@ extension Matchable {
     }
 }
 
+public extension MatchableCompound {
+    func assertMatches(_ other: Self, in context: MatchableContext) throws {
+        try assertWrappedChecksMatch(of: other, in: context) {
+            try assertContentMatches(other, in: context)
+        }
+    }
+}
+
 public extension RawRepresentable where RawValue: Matchable {
     func assertMatches(_ other: Self, in context: MatchableContext) throws {
         try rawValue.assertMatches(other.rawValue, in: context)
+    }
+}
+
+extension Optional: Matchable where Wrapped: Matchable {
+    public func assertMatches(_ other: Optional<Wrapped>, in context: MatchableContext) throws {
+        if let a = self, let b = other {
+            try a.assertMatches(b, in: context)
+        } else if let _ = self {
+            throw MatchFailedError("Expected non-nil value", value: self, expected: other, context: context)
+        } else if let _ = other {
+            throw MatchFailedError("Expected nil value", value: self, expected: other, context: context)
+        }
     }
 }
