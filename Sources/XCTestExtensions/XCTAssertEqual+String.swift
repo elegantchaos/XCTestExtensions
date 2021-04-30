@@ -3,8 +3,9 @@
 //  All code (c) 2020 - present day, Elegant Chaos Limited.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-import XCTest
 import Foundation
+import Matchable
+import XCTest
 
 /// Assert that two strings are equal.
 /// If the strings don't match, this function compares them line by line to produce a more accurate description of the place where they differ.

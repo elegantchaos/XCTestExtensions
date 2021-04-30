@@ -4,6 +4,7 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 import XCTest
+import Matchable
 
 public func XCTFail(_ error: Error, file: StaticString = #file, line: UInt = #line) {
     if let error = error as? MatchFailedErrorBase {

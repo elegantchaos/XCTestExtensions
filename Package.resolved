@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Matchable",
+        "repositoryURL": "https://github.com/elegantchaos/Matchable.git",
+        "state": {
+          "branch": null,
+          "revision": "cd8ed20403a88415f10d2330a0cbd65a01b1c09c",
+          "version": "1.0.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
