@@ -31,8 +31,14 @@ public func XCTAssertEqualIgnoringWhitespace(_ string: String, _ expected: Strin
 /// Assert that two arrays of strings are equal, without ignoring whitespace at the beginning/end of each line.
 /// If the strings don't match, this function compares them line by line to produce a more accurate description of the place where they differ.
 public func XCTAssertEqual(_ strings: [String], _ expected: [String], file: StaticString = #file, line: UInt = #line) {
-    for (string, expected) in zip(strings, expected) {
-        XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: false, file: file, line: line)
+    if expected.count > strings.count {
+        XCTFail("Not enough items in array: expected \(expected.count), got \(strings.count).", file: file, line: line)
+    } else if expected.count < strings.count {
+        XCTFail("Too many items in array: expected \(expected.count), got \(strings.count).", file: file, line: line)
+    } else {
+        for (string, expected) in zip(strings, expected) {
+            XCTAssertEqualLineByLine(string, expected, ignoringWhitespace: false, file: file, line: line)
+        }
     }
 }
 
