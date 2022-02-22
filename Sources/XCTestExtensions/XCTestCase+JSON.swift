@@ -12,8 +12,8 @@ public extension XCTestCase {
         return String(data: try! encoder.encode(value), encoding: .utf8)!
     }
     
-    func decode<T>(_ type: T.Type, fromJSON json: String) -> T where T: Decodable {
+    func decode<T>(_ type: T.Type, fromJSON json: String) throws -> T where T: Decodable {
         let decoded = JSONDecoder()
-        return try! decoded.decode(T.self, from: json.data(using: .utf8)!)
+        return try decoded.decode(T.self, from: json.data(using: .utf8)!)
     }
 }
