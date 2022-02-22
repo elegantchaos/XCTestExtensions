@@ -71,3 +71,9 @@ private extension String.StringInterpolation {
         appendInterpolation(String(format: "%0X", hex))
     }
 }
+
+public extension Data {
+    var printable: String {
+        return String(data: self, encoding: .utf8) ?? description
+    }
+}
