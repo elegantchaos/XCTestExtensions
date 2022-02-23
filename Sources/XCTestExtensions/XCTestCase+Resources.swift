@@ -7,15 +7,28 @@ import XCTest
 
 extension XCTestCase {
     
-    /// Return the URL to a unique temporary file, which is guaranteed not to exist.
+    /// Return the URL to a folder that can be used to output test results to.
+    /// By default we use the temporary directory, but the TestOutput environment
+    /// variable can be set to a path to use instead.
+    ///
+    /// For example "~/Desktop/Test Results" will put the results into a
+    /// folder on the desktop.
+    public func outputDirectory() -> URL {
+        if let path = ProcessInfo.processInfo.environment["TestOutput"] {
+            let root = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+            return root.appendingPathComponent(testBundleName)
+        } else {
+            return temporaryDirectory()
+        }
+    }
+    
+    /// Return the URL to a file which can be used as to output test results to.
+    /// The file is guaranteed not to exist (any previous file is deleted).
     /// - Parameter named: The name to use for the file.
     /// - Parameter pathExtension: The extension to use for the file.
-    public func temporaryFile(named: String? = nil, extension pathExtension: String? = nil) -> URL {
-        let intervals = Date.timeIntervalSinceReferenceDate
-        let root = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(intervals)")
-        let bundle = Bundle(for: type(of: self))
-        let folder = root.appendingPathComponent(bundle.bundleURL.lastPathComponent).deletingPathExtension()
-        var file = folder.appendingPathComponent(self.name)
+    public func outputFile(named: String? = nil, extension pathExtension: String? = nil, in folder: URL? = nil) -> URL {
+        let directory = folder ?? outputDirectory()
+        var file = directory.appendingPathComponent(self.name)
         file = file.appendingPathComponent(named ?? "test")
         if let ext = pathExtension {
             file = file.appendingPathExtension(ext)
@@ -24,6 +37,23 @@ extension XCTestCase {
         try? FileManager.default.removeItem(at: file)
         return file
     }
+    
+    /// Return the URL to a folder that can be used to store temporary files
+    public func temporaryDirectory() -> URL {
+        let intervals = Date.timeIntervalSinceReferenceDate
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+        let bundleRoot = root.appendingPathComponent(testBundleName)
+        let folder = bundleRoot.appendingPathComponent("\(intervals)")
+        return folder
+    }
+    
+    /// Return the URL to a unique temporary file, which is guaranteed not to exist.
+    /// - Parameter named: The name to use for the file.
+    /// - Parameter pathExtension: The extension to use for the file.
+    public func temporaryFile(named name: String? = nil, extension pathExtension: String? = nil) -> URL {
+        return outputFile(named: name, extension: pathExtension, in: temporaryDirectory())
+    }
+    
     
     /// The bundle containing the currently running XCTestCase
     public var testBundle: Bundle {
@@ -142,17 +172,17 @@ extension XCTestCase {
     /// Returns path to the directory containing this test plugin.
     /// When running from Xcode, this should be the built products directory.
     public var productsDirectory: URL {
-      #if !os(Linux)
+#if !os(Linux)
         for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
             return bundle.bundleURL.deletingLastPathComponent()
         }
         fatalError("couldn't find the products directory")
-      #else
+#else
         return Bundle.main.bundleURL
-      #endif
+#endif
     }
     
-    #if os(macOS) || os(Linux)
+#if os(macOS) || os(Linux)
     /// Run an external executable in the same location as the test bundle, and
     /// return its output.
     public func run(_ command: String, arguments: [String] = []) -> XCTestRunner.Result {
@@ -161,5 +191,5 @@ extension XCTestCase {
         let result = runner.run(with: arguments)
         return result
     }
-    #endif
+#endif
 }
