@@ -6,10 +6,9 @@
 import XCTest
 
 extension XCTestCase {
-    
-    /// The name of the test case and test, expressed as
-    /// path components.
-    var testPathComponents: String {
+
+    /// The name of the test case and the test.
+    var testComponents: [String] {
         var name = self.name
         if name.starts(with: "-[") {
             name.removeFirst(2)
@@ -19,7 +18,16 @@ extension XCTestCase {
             name.removeLast()
         }
         
-        return name.split(separator: " ").joined(separator: "/")
+        return name.split(separator: " ").map({ String($0) })
+    }
+
+    
+    /// The name of the test case and test, expressed as
+    /// path components.
+    var testComponentsPath: String {
+        let components = testComponents
+        
+        return components.joined(separator: "/")
     }
 
     
@@ -29,16 +37,26 @@ extension XCTestCase {
     ///
     /// For example "~/Desktop/Test Results" will put the results into a
     /// folder on the desktop.
-    public func outputDirectory() -> URL {
-        let bundleDir: URL
+    public func outputDirectory(appendCaseName: Bool = true, appendTestName: Bool = true) -> URL {
+        var url: URL
         if let path = ProcessInfo.processInfo.environment["TestOutput"] {
             let root = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
-            bundleDir = root.appendingPathComponent(testBundleName)
+            url = root.appendingPathComponent(testBundleName)
         } else {
-            bundleDir = temporaryDirectory()
+            url = temporaryDirectory()
         }
 
-        return bundleDir.appendingPathComponent(testPathComponents)
+        let components = testComponents
+        if appendCaseName && components.count > 0 {
+            url.appendPathComponent(components[0])
+        }
+        
+        if appendTestName && components.count > 1 {
+            url.appendPathComponent(components[1])
+        }
+        
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
     }
     
     /// Return the URL to a file which can be used as to output test results to.
@@ -51,12 +69,15 @@ extension XCTestCase {
             container.appendPathComponent(path)
         }
 
+        let fm = FileManager.default
+        try? fm.createDirectory(at: container, withIntermediateDirectories: true)
+        
         var file = container.appendingPathComponent(named ?? "test")
         if let ext = pathExtension {
             file = file.appendingPathExtension(ext)
         }
         
-        try? FileManager.default.removeItem(at: file)
+        try? fm.removeItem(at: file)
         return file
     }
     
