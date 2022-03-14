@@ -7,6 +7,22 @@ import XCTest
 
 extension XCTestCase {
     
+    /// The name of the test case and test, expressed as
+    /// path components.
+    var testPathComponents: String {
+        var name = self.name
+        if name.starts(with: "-[") {
+            name.removeFirst(2)
+        }
+        
+        if name.last == "]" {
+            name.removeLast()
+        }
+        
+        return name.split(separator: " ").joined(separator: "/")
+    }
+
+    
     /// Return the URL to a folder that can be used to output test results to.
     /// By default we use the temporary directory, but the TestOutput environment
     /// variable can be set to a path to use instead.
@@ -14,22 +30,28 @@ extension XCTestCase {
     /// For example "~/Desktop/Test Results" will put the results into a
     /// folder on the desktop.
     public func outputDirectory() -> URL {
+        let bundleDir: URL
         if let path = ProcessInfo.processInfo.environment["TestOutput"] {
             let root = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
-            return root.appendingPathComponent(testBundleName)
+            bundleDir = root.appendingPathComponent(testBundleName)
         } else {
-            return temporaryDirectory()
+            bundleDir = temporaryDirectory()
         }
+
+        return bundleDir.appendingPathComponent(testPathComponents)
     }
     
     /// Return the URL to a file which can be used as to output test results to.
     /// The file is guaranteed not to exist (any previous file is deleted).
     /// - Parameter named: The name to use for the file.
     /// - Parameter pathExtension: The extension to use for the file.
-    public func outputFile(named: String? = nil, extension pathExtension: String? = nil, in folder: URL? = nil) -> URL {
-        let directory = folder ?? outputDirectory()
-        var file = directory.appendingPathComponent(self.name)
-        file = file.appendingPathComponent(named ?? "test")
+    public func outputFile(named: String? = nil, extension pathExtension: String? = nil, subdirectory: String? = nil, root: URL? = nil) -> URL {
+        var container = root ?? outputDirectory()
+        if let path = subdirectory {
+            container.appendPathComponent(path)
+        }
+
+        var file = container.appendingPathComponent(named ?? "test")
         if let ext = pathExtension {
             file = file.appendingPathExtension(ext)
         }
@@ -51,7 +73,7 @@ extension XCTestCase {
     /// - Parameter named: The name to use for the file.
     /// - Parameter pathExtension: The extension to use for the file.
     public func temporaryFile(named name: String? = nil, extension pathExtension: String? = nil) -> URL {
-        return outputFile(named: name, extension: pathExtension, in: temporaryDirectory())
+        return outputFile(named: name, extension: pathExtension, root: temporaryDirectory())
     }
     
     
@@ -96,9 +118,9 @@ extension XCTestCase {
     ///
     /// - Parameter name: Name of the resource file.
     /// - Parameter extension: Extension of the resource file.
-    public func testURL(named name: String, withExtension extension: String) -> URL {
+    public func testURL(named name: String, withExtension pathExtension: String) -> URL {
         let bundle = testBundle
-        if let url = bundle.url(forResource: name, withExtension: `extension`) {
+        if let url = bundle.url(forResource: name, withExtension: pathExtension) {
             return url
         }
         
@@ -113,7 +135,7 @@ extension XCTestCase {
             // we're building with SPM
             let root = container.deletingLastPathComponent()
             let module = root.deletingPathExtension().lastPathComponent
-            return root.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+            return root.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(pathExtension)")
         } else if container.lastPathComponent == "Build" {
             // we're building with Xcode, we can hopefully extract the workspace path from an Info.plist in the Build directory
             let root = container.deletingLastPathComponent()
@@ -124,14 +146,14 @@ extension XCTestCase {
                         if workspace.pathExtension == "" {
                             // if the extension is empty, we're building from the default auto-generated workspace
                             let module = workspace.deletingPathExtension().lastPathComponent
-                            let url = workspace.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+                            let url = workspace.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(pathExtension)")
                             return url
                         } else {
                             // we're building from an explicit workspace - we assume it's at the root level of the project
                             // you can use this during development to set up a workspace which pulls in editable versions of dependencies
                             let root = workspace.deletingLastPathComponent()
                             let module = root.deletingPathExtension().lastPathComponent
-                            let url = root.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(`extension`)")
+                            let url = root.appendingPathComponent("Tests").appendingPathComponent("\(module)Tests").appendingPathComponent("Resources").appendingPathComponent("\(name).\(pathExtension)")
                             return url
                         }
                     }
@@ -139,22 +161,22 @@ extension XCTestCase {
             }
         }
         
-        fatalError("can't find test resource \(name) of type \(`extension`) (from \(bundle.bundleURL))")
+        fatalError("can't find test resource \(name) of type \(pathExtension) (from \(bundle.bundleURL))")
     }
     
     /// Returns some test data loaded form the test bundle.
     /// - Parameter name: Name of the resource file containing the data.
     /// - Parameter extension: Extension of the resource file containing the data.
-    public func testData(named name: String, withExtension extension: String) -> Data {
-        let url = testURL(named: name, withExtension: `extension`)
+    public func testData(named name: String, withExtension pathExtension: String) -> Data {
+        let url = testURL(named: name, withExtension: pathExtension)
         return try! Data(contentsOf: url)
     }
     
     /// Returns a string loaded from the test bundle.
     /// - Parameter name: Name of the file containing the text.
     /// - Parameter extension: Extension of the file containing the text.
-    public func testString(named name: String, withExtension extension: String) -> String {
-        let data = testData(named: name, withExtension: `extension`)
+    public func testString(named name: String, withExtension pathExtension: String) -> String {
+        let data = testData(named: name, withExtension: pathExtension)
         return String(data: data, encoding: .utf8)!
     }
     
