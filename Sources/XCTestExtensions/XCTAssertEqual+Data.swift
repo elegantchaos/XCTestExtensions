@@ -24,10 +24,11 @@ func compareData(_ actual: Data, _ expected: Data) -> String {
         let a = actual[n]
         let e = expected[n]
         let div = a == e ? "--" : "**"
+        let count = String(format: "%05d", n)
         if a != e {
             mismatches.append(n)
         }
-        print("\(printable: a)  \(hexDigit: a)   \(div)   \(hexDigit: e)  \(printable: e)")
+        print("\(printable: a)  \(hexDigit: a)   \(div) \(count) \(div)  \(hexDigit: e)  \(printable: e)")
     }
     if actual.count > count {
         for n in count..<actual.count {
