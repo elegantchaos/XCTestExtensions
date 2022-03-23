@@ -6,7 +6,7 @@
 import XCTest
 
 public extension XCTestCase {
-    func asJSON<T>(_ value: T) -> String where T: Encodable {
+    @available(macOS 10.13, iOS 11.0, tvOS 11.0, watchOS 6.0, *) func asJSON<T>(_ value: T) -> String where T: Encodable {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return String(data: try! encoder.encode(value), encoding: .utf8)!
