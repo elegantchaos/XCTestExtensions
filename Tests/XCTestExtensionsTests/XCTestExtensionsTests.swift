@@ -20,9 +20,9 @@ final class XCTestExtensionsTests: XCTestCase {
     func testTestBundle() {
         let url = testBundle.bundleURL
         #if !os(Linux)
-        XCTAssertEqual(url.pathExtension, "xctest")
+            XCTAssertEqual(url.pathExtension, "xctest")
         #else
-        XCTAssertTrue(FileManager.default.fileExists(atPath: url.appendingPathComponent(testBundleName).appendingPathExtension("xctest")))
+            XCTAssertTrue(FileManager.default.fileExists(atPath: url.appendingPathComponent(testBundleName).appendingPathExtension("xctest").path))
         #endif
     }
     
@@ -65,7 +65,7 @@ final class XCTestExtensionsTests: XCTestCase {
         XCTAssertEqual(ok1, ExampleResult.success(1))
         XCTAssertNotEqual(ok1, ExampleResult.success(2))
         XCTAssertNotEqual(ok1, ExampleResult.failure(ExampleError()))
-
+        
         let failed = ExampleResult.failure(ExampleError())
         
         XCTAssertFailure(failed) {
@@ -74,7 +74,7 @@ final class XCTestExtensionsTests: XCTestCase {
         XCTAssertEqual(failed, ExampleResult.failure(ExampleError()))
         XCTAssertNotEqual(failed, ExampleResult.failure(NSError(domain: "test", code: 123, userInfo: [:]) ))
         XCTAssertNotEqual(failed, ExampleResult.success(1))
-
+        
     }
     
     func testCollections() {
