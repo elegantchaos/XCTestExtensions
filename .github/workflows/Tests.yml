@@ -11,7 +11,7 @@ jobs:
 
     macOS-swift-51:
         name: macOS (Swift 5.1)
-        runs-on: macos-10
+        runs-on: macos-10.15
         steps:
         - name: Checkout
           uses: actions/checkout@v1
@@ -35,39 +35,24 @@ jobs:
             path: logs
 
 
-    macOS-swift-nightly:
-        name: macOS (Swift Development Nightly)
-        env:
-            TOOLCHAINS: swift
+    macOS-swift-56:
+        name: macOS (Swift 5.6)
         runs-on: macos-11
         steps:
         - name: Checkout
           uses: actions/checkout@v1
         - name: Make Logs Directory
           run: mkdir logs
-        - name: Install Toolchain
-          run: |
-            branch="development"
-            wget --quiet https://swift.org/builds/$branch/xcode/latest-build.yml
-            grep "download:" < latest-build.yml > filtered.yml
-            sed -e 's/-osx.pkg//g' filtered.yml > stripped.yml
-            sed -e 's/:[^:\/\/]/YML="/g;s/$/"/g;s/ *=/=/g' stripped.yml > snapshot.sh
-            source snapshot.sh
-            echo "Installing Toolchain: $downloadYML"
-            wget --quiet https://swift.org/builds/$branch/xcode/$downloadYML/$downloadYML-osx.pkg
-            sudo installer -pkg $downloadYML-osx.pkg -target /
-            ln -s "/Library/Developer/Toolchains/$downloadYML.xctoolchain/usr/bin" swift-latest
-            ls -d /Applications/Xcode*
-            sudo xcode-select -s /Applications/Xcode_13.2.1.app
-            swift --version
         - name: Xcode Version
           run: |
+            ls -d /Applications/Xcode*
+            sudo xcode-select -s /Applications/Xcode_13.2.1.app
             xcodebuild -version
-            xcrun swift --version
+            swift --version
         - name: Swift Version
           run: swift --version
         - name: Test (Release)
-          run: export PATH="swift-latest:$PATH"; swift test --configuration release -Xswiftc -enable-testing 
+          run: swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
         - name: Upload Logs
           uses: actions/upload-artifact@v1
           if: always()
@@ -97,10 +82,10 @@ jobs:
             path: logs
 
 
-    linux-swift-nightly:
-        name: Linux (Swift Development Nightly)
+    linux-swift-56:
+        name: Linux (Swift 5.6)
         runs-on: ubuntu-18.04
-        container: swiftlang/swift:nightly
+        container: swiftlang/swift:nightly-5.6-bionic
         steps:
         - name: Checkout
           uses: actions/checkout@v1
@@ -109,7 +94,7 @@ jobs:
         - name: Swift Version
           run: swift --version
         - name: Test (Release)
-          run: swift test --configuration release -Xswiftc -enable-testing 
+          run: swift test --configuration release -Xswiftc -enable-testing --enable-test-discovery
         - name: Upload Logs
           uses: actions/upload-artifact@v1
           if: always()
@@ -120,7 +105,7 @@ jobs:
 
     xcode-swift-51:
         name: iOS/tvOS (Swift 5.1, Xcode 11.3.1)
-        runs-on: macos-10
+        runs-on: macos-10.15
         steps:
         - name: Checkout
           uses: actions/checkout@v1
@@ -186,35 +171,20 @@ jobs:
             path: logs
 
 
-    xcode-swift-nightly:
-        name: iOS/tvOS (Swift Development Nightly, Xcode 13.2.1)
-        env:
-            TOOLCHAINS: swift
+    xcode-swift-56:
+        name: iOS/tvOS (Swift 5.6, Xcode 13.2.1)
         runs-on: macos-11
         steps:
         - name: Checkout
           uses: actions/checkout@v1
         - name: Make Logs Directory
           run: mkdir logs
-        - name: Install Toolchain
-          run: |
-            branch="development"
-            wget --quiet https://swift.org/builds/$branch/xcode/latest-build.yml
-            grep "download:" < latest-build.yml > filtered.yml
-            sed -e 's/-osx.pkg//g' filtered.yml > stripped.yml
-            sed -e 's/:[^:\/\/]/YML="/g;s/$/"/g;s/ *=/=/g' stripped.yml > snapshot.sh
-            source snapshot.sh
-            echo "Installing Toolchain: $downloadYML"
-            wget --quiet https://swift.org/builds/$branch/xcode/$downloadYML/$downloadYML-osx.pkg
-            sudo installer -pkg $downloadYML-osx.pkg -target /
-            ln -s "/Library/Developer/Toolchains/$downloadYML.xctoolchain/usr/bin" swift-latest
-            ls -d /Applications/Xcode*
-            sudo xcode-select -s /Applications/Xcode_13.2.1.app
-            swift --version
         - name: Xcode Version
           run: |
+            ls -d /Applications/Xcode*
+            sudo xcode-select -s /Applications/Xcode_13.2.1.app
             xcodebuild -version
-            xcrun swift --version
+            swift --version
         - name: XC Pretty
           run: sudo gem install xcpretty-travis-formatter
         - name: Detect Workspace & Scheme (iOS)
@@ -234,11 +204,11 @@ jobs:
             SCHEME="XCTestExtensions-iOS"
             fi
             echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
-        - name: Build (iOS Release)
+        - name: Test (iOS Release)
           run: |
             source "setup.sh"
-            echo "Building workspace $WORKSPACE scheme $SCHEME."
-            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=iPhone 11" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-iOS-build-release.log | xcpretty
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=iPhone 11" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-iOS-test-release.log | xcpretty
         - name: Detect Workspace & Scheme (tvOS)
           run: |
             WORKSPACE="XCTestExtensions.xcworkspace"
@@ -256,11 +226,11 @@ jobs:
             SCHEME="XCTestExtensions-tvOS"
             fi
             echo "set -o pipefail; export PATH='swift-latest:$PATH'; WORKSPACE='$WORKSPACE'; SCHEME='$SCHEME'" > setup.sh
-        - name: Build (tvOS Release)
+        - name: Test (tvOS Release)
           run: |
             source "setup.sh"
-            echo "Building workspace $WORKSPACE scheme $SCHEME."
-            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=Apple TV" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-tvOS-build-release.log | xcpretty
+            echo "Testing workspace $WORKSPACE scheme $SCHEME."
+            xcodebuild test -workspace "$WORKSPACE" -scheme "$SCHEME" -destination "name=Apple TV" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_TESTABILITY=YES | tee logs/xcodebuild-tvOS-test-release.log | xcpretty
         - name: Upload Logs
           uses: actions/upload-artifact@v1
           if: always()
