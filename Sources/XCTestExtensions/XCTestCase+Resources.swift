@@ -201,6 +201,15 @@ extension XCTestCase {
         return String(data: data, encoding: .utf8)!
     }
     
+    /// Returns a json dictionary loaded from the test bundle.
+    /// - Parameter name: Name of the file containing the dictionary.
+    /// - Parameter extension: Extension of the file containing the text.
+    public func testDictionary(named name: String, withExtension pathExtension: String = "json") throws -> [String:Any] {
+        let url = testURL(named: name, withExtension: pathExtension)
+        let data = try Data(contentsOf: url)
+        return try JSONSerialization.jsonObject(with: data) as! [String:Any]
+    }
+
     /// Looks up a flag in the environment variables.
     /// Returns true if it's not set, or set to a false-y value, true otherwise.
     /// Useful for conditionalising tests.
