@@ -51,7 +51,7 @@ public extension XCUIApplication {
     /// The location that we're going to save screenshots to.
     /// As well as attaching them to the test results, we write them
     /// to a directory. This defaults to a temporary folder, but can
-    /// be set using the ScreenshotDirectory when running the tests.
+    /// be set using the `ScreenshotDirectory` when running the tests.
     /// This allows you to generate screenshots to a known location
     /// (eg inside your project folder, so that you can commit them).
     var screenshotsURL: URL {
@@ -62,6 +62,9 @@ public extension XCUIApplication {
         return url
     }
     
+    /// Make a screenshot. The screen to use can be set using the `ScreenshotScreen`
+    /// environment variable. This lets you pick the best screen for your shots, eg
+    /// one which is clear of other clutter.
     func cleanScreenshot() -> XCUIScreenshot {
         let screens = XCUIScreen.screens
         let screen: XCUIScreen
@@ -74,6 +77,8 @@ public extension XCUIApplication {
         return screen.screenshot()
     }
     
+    /// Save a screenshot as a PNG to the output folder, with a given name.
+    /// The screenshot is also returned as an attachment.
     func saveScreenshot(_ name: String) -> XCTAttachment {
         let screenshot = cleanScreenshot()
         let data = screenshot.pngRepresentation
@@ -89,4 +94,60 @@ public extension XCUIApplication {
         attachment.lifetime = .keepAlways
         return attachment
     }
+    
+    
+    func showContextMenu(for row: XCUIElement, highlighting: String? = nil) {
+#if !os(tvOS)
+#if targetEnvironment(macCatalyst)
+        row.rightClick()
+        if let name = highlighting {
+            let item = menuItems[name].firstMatch
+            XCTAssertTrue(item.waitForExistence(timeout: 5))
+            item.hover()
+        }
+#else
+        row.press(forDuration: 1.0)
+#endif
+#endif
+    }
+    
+    func selectContextMenuItem(_ name: String) {
+#if !os(tvOS)
+#if targetEnvironment(macCatalyst)
+        let item = menuItems[name].firstMatch
+#else
+        let item = buttons[name].firstMatch
+#endif
+        XCTAssertTrue(item.waitForExistence(timeout: 5))
+        item.tap()
+#endif
+    }
+    
+    func hideOtherApplications() {
+#if os(macOS) || targetEnvironment(macCatalyst)
+        let item = menuItems["hideOtherApplications:"]
+        if item.waitForExistence(timeout: 1.0) {
+            item.tap()
+        }
+#endif
+    }
+    
+    func unhideApplications() {
+#if os(macOS) || targetEnvironment(macCatalyst)
+        let item = menuItems["unhideAllApplications:"]
+        if item.waitForExistence(timeout: 1.0) {
+            item.tap()
+        }
+#endif
+    }
+    
+    func quit() {
+#if os(macOS) || targetEnvironment(macCatalyst)
+        let item = menuItems["handleQuit:"]
+        if item.waitForExistence(timeout: 1.0) {
+            item.tap()
+        }
+#endif
+    }
+    
 }
