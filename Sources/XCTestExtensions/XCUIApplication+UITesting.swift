@@ -57,7 +57,17 @@ public extension XCUIApplication {
     var screenshotsURL: URL {
         let env = ProcessInfo.processInfo.environment
         let path = env["ScreenshotDirectory"] ?? "\(NSTemporaryDirectory())/Screenshots"
-        let url = URL(fileURLWithPath: path).appendingPathComponent(UIDevice.current.name)
+        var url = URL(fileURLWithPath: path)
+
+        let deviceName: String?
+        #if os(iOS)
+            deviceName = UIDevice.current.name
+        #else
+            deviceName = Host.current().name
+        #endif
+        if let deviceName {
+            url = url.appendingPathComponent(deviceName)
+        }
         
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
